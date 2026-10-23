@@ -8,6 +8,18 @@ const parseField = (value, fallback) => {
     try { return JSON.parse(value) } catch { return fallback }
 }
 
+// parse imageUrls: handles JSON array string, plain URL string, or already-an-array
+const parseImageUrls = (value) => {
+    if (!value) return []
+    if (Array.isArray(value)) return value.filter(Boolean)
+    if (typeof value !== 'string') return []
+    const trimmed = value.trim()
+    if (trimmed.startsWith('[')) {
+        try { return JSON.parse(trimmed).filter(Boolean) } catch { return [] }
+    }
+    return trimmed ? [trimmed] : []
+}
+
 const cleanSides = sides => ({
     left: typeof sides?.left === 'string' ? sides.left : '',
     right: typeof sides?.right === 'string' ? sides.right : ''
@@ -26,7 +38,7 @@ const addProduct = async (req, res) => {
             return res.json({ success: false, message: "Invalid price value" })
         }
 
-        const images = parseField(imageUrls, [])
+        const images = parseImageUrls(imageUrls)
         if (!images.length) {
             return res.json({ success: false, message: "Front image is required" })
         }
@@ -166,8 +178,8 @@ const updateProduct = async (req, res) => {
         if (seo !== undefined) updateData.seo = parseField(seo, {})
         if (sideImages !== undefined) updateData.sideImages = cleanSides(parseField(sideImages, {}))
 
-        const images = parseField(imageUrls, null)
-        if (images && images.length) updateData.image = images
+        const images = parseImageUrls(imageUrls)
+        if (images.length) updateData.image = images
 
         await productModel.findByIdAndUpdate(id, updateData)
 
