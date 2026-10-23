@@ -48,15 +48,15 @@ td.value{color:rgba(255,255,255,0.8);font-weight:500;}
 <body>
 <div class="wrap">
 <div class="header">
-<div class="logo">KRIVANTE</div>
-<div class="tagline">Marketplace</div>
+<div class="logo">VIBECULTURE</div>
+<div class="tagline">Premium Clothing Store</div>
 </div>
 <div class="body">${content}</div>
 <div class="footer">
 <p class="footer-text">
-&copy; 2025 Krivante. All rights reserved.<br/>
-<a href="https://www.krivante.store" class="footer-link">www.krivante.store</a> &nbsp;&bull;&nbsp;
-<a href="mailto:support@krivante.store" class="footer-link">support@krivante.store</a> &nbsp;&bull;&nbsp;
+&copy; 2025 VIBECULTURE. All rights reserved.<br/>
+<a href="https://www.VIBECULTURE.store" class="footer-link">www.VIBECULTURE.store</a> &nbsp;&bull;&nbsp;
+<a href="mailto:support@VIBECULTURE.store" class="footer-link">support@VIBECULTURE.store</a> &nbsp;&bull;&nbsp;
 +91-1294044211
 </p>
 <p class="footer-text" style="margin-top:8px;">Faridabad, Haryana, India 121001</p>
@@ -66,32 +66,32 @@ td.value{color:rgba(255,255,255,0.8);font-weight:500;}
 </html>`
 
 const send = (to, subject, html) => transporter.sendMail({
-    from: `"Krivante" <${process.env.EMAIL_USER}>`,
+    from: `"VIBECULTURE" <${process.env.EMAIL_USER}>`,
     to, subject, html
 })
 
 // Welcome / Onboarding
 export const sendWelcomeEmail = (email, name) => send(
     email,
-    `Welcome to Krivante, ${name}! Your account is ready`,
+    `Welcome to VIBECULTURE, ${name}! Your account is ready`,
     baseTemplate(`
         <h1>Welcome, ${name}! &#10022;</h1>
-        <h2>Your Krivante account is ready.</h2>
-        <p class="text">We are thrilled to have you. Krivante is your one-stop destination for premium kitchen utensils, pure dry fruits, hand-picked spices, and so much more delivered fresh across India.</p>
+        <h2>Your VIBECULTURE account is ready.</h2>
+        <p class="text">We are thrilled to have you. VIBECULTURE is your one-stop destination for premium kitchen utensils, pure dry fruits, hand-picked spices, and so much more delivered fresh across India.</p>
         <div class="divider"></div>
         <div class="card">
           <h2 style="margin-bottom:12px;">What is waiting for you</h2>
-          <p class="text-muted">&#127859; &nbsp;Premium Kitchen Utensils and Cookware</p>
-          <p class="text-muted">&#129372; &nbsp;Pure Dry Fruits and Nuts sourced directly</p>
-          <p class="text-muted">&#127798; &nbsp;Authentic Spices and Masalas</p>
-          <p class="text-muted">&#127873; &nbsp;Curated Gift Sets for every occasion</p>
+          <p class="text-muted">&#128084; &nbsp;Premium Clothing and Apparel</p>
+          <p class="text-muted">&#128081; &nbsp;Exclusive Fashion Collections</p>
+          <p class="text-muted">&#127775; &nbsp;Curated Styles for every occasion</p>
+          <p class="text-muted">&#127873; &nbsp;Special Gifts and Bundles</p>
           <p class="text-muted">&#9889; &nbsp;Flash deals and exclusive member offers</p>
         </div>
         <div style="text-align:center;">
-          <a href="https://www.krivante.store/collection" class="btn">Start Shopping</a>
+          <a href="https://www.VIBECULTURE.store/collection" class="btn">Start Shopping</a>
         </div>
         <div class="divider"></div>
-        <p class="text-muted">Need help? Reply to this email or reach us at <a href="mailto:support@krivante.store" style="color:#c9a84c;">support@krivante.store</a>. We are available 24/7.</p>
+        <p class="text-muted">Need help? Reply to this email or reach us at <a href="mailto:support@VIBECULTURE.store" style="color:#c9a84c;">support@VIBECULTURE.store</a>. We are available 24/7.</p>
     `)
 )
 
@@ -103,7 +103,7 @@ export const sendOrderConfirmationEmail = (email, name, order) => {
 
     return send(
         email,
-        `Order Confirmed #${order._id.toString().slice(-6).toUpperCase()} - Krivante`,
+        `Order Confirmed #${order._id.toString().slice(-6).toUpperCase()} - VIBECULTURE`,
         baseTemplate(`
             <h1>Order Confirmed!</h1>
             <h2>Thank you, ${name}.</h2>
@@ -125,7 +125,7 @@ export const sendOrderConfirmationEmail = (email, name, order) => {
               Phone: ${order.address.phone}</p>
             </div>
             <div style="text-align:center;">
-              <a href="https://www.krivante.store/orders" class="btn">Track My Order</a>
+              <a href="https://www.VIBECULTURE.store/orders" class="btn">Track My Order</a>
             </div>
         `)
     )
@@ -145,7 +145,7 @@ export const sendOrderStatusEmail = (email, name, order) => {
 
     return send(
         email,
-        `Order Update: ${order.status} - Krivante`,
+        `Order Update: ${order.status} - VIBECULTURE`,
         baseTemplate(`
             <h1>Order Update</h1>
             <h2>Hi ${name}, here is your update.</h2>
@@ -159,9 +159,9 @@ export const sendOrderStatusEmail = (email, name, order) => {
               <p class="text-muted">Amount: <strong style="color:#c9a84c;">Rs.${order.amount}</strong></p>
             </div>
             <div style="text-align:center;">
-              <a href="https://www.krivante.store/orders" class="btn">View Order Details</a>
+              <a href="https://www.VIBECULTURE.store/orders" class="btn">View Order Details</a>
             </div>
-            <p class="text-muted" style="margin-top:24px;">Questions? Contact us at <a href="mailto:support@krivante.store" style="color:#c9a84c;">support@krivante.store</a></p>
+            <p class="text-muted" style="margin-top:24px;">Questions? Contact us at <a href="mailto:support@VIBECULTURE.store" style="color:#c9a84c;">support@VIBECULTURE.store</a></p>
         `)
     )
 }
@@ -169,7 +169,7 @@ export const sendOrderStatusEmail = (email, name, order) => {
 // Payment Success
 export const sendPaymentSuccessEmail = (email, name, order) => send(
     email,
-    `Payment Received - Order #${order._id.toString().slice(-6).toUpperCase()} - Krivante`,
+    `Payment Received - Order #${order._id.toString().slice(-6).toUpperCase()} - VIBECULTURE`,
     baseTemplate(`
         <h1>Payment Successful!</h1>
         <h2>Thank you, ${name}.</h2>
@@ -182,7 +182,7 @@ export const sendPaymentSuccessEmail = (email, name, order) => send(
           <p class="text-muted">Amount Paid: <strong style="color:#10b981;">Rs.${order.amount}</strong></p>
         </div>
         <div style="text-align:center;">
-          <a href="https://www.krivante.store/orders" class="btn">View My Orders</a>
+          <a href="https://www.VIBECULTURE.store/orders" class="btn">View My Orders</a>
         </div>
     `)
 )
