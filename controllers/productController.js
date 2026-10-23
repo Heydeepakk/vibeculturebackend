@@ -1,36 +1,58 @@
 import { v2 as cloudinary } from "cloudinary"
 import productModel from "../models/productModel.js"
 
+// form fields may arrive as JSON strings (multipart) or as real values (JSON body)
+const parseField = (value, fallback) => {
+    if (value === undefined || value === null || value === '') return fallback
+    if (typeof value !== 'string') return value
+    try { return JSON.parse(value) } catch { return fallback }
+}
+
+const cleanSides = sides => ({
+    left: typeof sides?.left === 'string' ? sides.left : '',
+    right: typeof sides?.right === 'string' ? sides.right : ''
+})
+
+const slugify = text => String(text || '').toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 80)
+
 // function for add product
 const addProduct = async (req, res) => {
     try {
-        const { name, description, price, category, subCategory, sizes, bestseller, variants, seo, imageUrls } = req.body
+        const { name, description, price, category, subCategory, sizes, bestseller, variants, seo, imageUrls, sideImages } = req.body
 
         // Validate price
         if (!price || isNaN(Number(price)) || Number(price) < 0) {
             return res.json({ success: false, message: "Invalid price value" })
         }
 
-        const imagesUrl = imageUrls ? JSON.parse(imageUrls) : []
+        const images = parseField(imageUrls, [])
+        if (!images.length) {
+            return res.json({ success: false, message: "Front image is required" })
+        }
+
+        const seoData = parseField(seo, {})
+        if (!seoData.slug) seoData.slug = `${slugify(name)}-${Date.now().toString(36)}`
 
         const productData = {
             name,
-            description,
+            description: description || '',
             category,
             price: Number(price),
-            subCategory,
-            bestseller: bestseller === "true" ? true : false,
-            sizes: JSON.parse(sizes),
-            variants: variants ? JSON.parse(variants) : [],
-            image: imagesUrl,
+            subCategory: subCategory || undefined,
+            bestseller: bestseller === true || bestseller === "true",
+            sizes: parseField(sizes, []),
+            variants: parseField(variants, []),
+            image: images,
+            sideImages: cleanSides(parseField(sideImages, {})),
             date: Date.now(),
-            seo: seo ? JSON.parse(seo) : {}
+            seo: seoData
         }
 
         const product = new productModel(productData);
         await product.save()
 
-        res.json({ success: true, message: "Product Added" })
+        res.json({ success: true, message: "Product Added", product })
 
     } catch (error) {
         console.log(error)
@@ -90,30 +112,62 @@ const getProductsByCategory = async (req, res) => {
     }
 }
 
-// function for update product
+// function for wardrobe racks: products grouped by category (lean payload for the hanger UI)
+const getRackProducts = async (req, res) => {
+    try {
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 40, 1), 80)
+
+        const racks = await productModel.aggregate([
+            { $sort: { date: -1 } },
+            {
+                $project: {
+                    name: 1, price: 1, bestseller: 1, category: 1, date: 1, sizes: 1, sideImages: 1,
+                    image: { $slice: ['$image', 2] },
+                    slug: '$seo.slug',
+                    inStock: {
+                        $cond: [
+                            { $gt: [{ $size: { $ifNull: ['$variants', []] } }, 0] },
+                            { $anyElementTrue: [{ $map: { input: '$variants', as: 'v', in: { $gt: ['$$v.quantity', 0] } } }] },
+                            true
+                        ]
+                    }
+                }
+            },
+            { $group: { _id: '$category', count: { $sum: 1 }, products: { $push: '$$ROOT' } } },
+            { $project: { count: 1, products: { $slice: ['$products', limit] } } },
+            { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'category' } },
+            { $unwind: '$category' },
+            { $project: { _id: 0, category: { _id: '$category._id', name: '$category.name', image: '$category.image', description: '$category.description', hangerStyle: '$category.hangerStyle' }, count: 1, products: 1 } },
+            { $sort: { 'category.name': 1 } }
+        ])
+
+        res.json({ success: true, racks })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+// function for update product (only the fields that are sent are changed)
 const updateProduct = async (req, res) => {
     try {
-        const { id, name, description, price, category, subCategory, bestseller, variants, seo, imageUrls } = req.body
+        const { id, name, description, price, category, subCategory, sizes, bestseller, variants, seo, imageUrls, sideImages } = req.body
 
         // Validate price
         if (!price || isNaN(Number(price)) || Number(price) < 0) {
             return res.json({ success: false, message: "Invalid price value" })
         }
 
-        let updateData = {
-            name,
-            description,
-            category,
-            price: Number(price),
-            subCategory,
-            bestseller: bestseller === "true" ? true : false,
-            variants: variants ? JSON.parse(variants) : [],
-            seo: seo ? JSON.parse(seo) : {}
-        }
+        const updateData = { name, description: description || '', category, price: Number(price) }
+        if (subCategory !== undefined) updateData.subCategory = subCategory || null
+        if (bestseller !== undefined) updateData.bestseller = bestseller === true || bestseller === "true"
+        if (sizes !== undefined) updateData.sizes = parseField(sizes, [])
+        if (variants !== undefined) updateData.variants = parseField(variants, [])
+        if (seo !== undefined) updateData.seo = parseField(seo, {})
+        if (sideImages !== undefined) updateData.sideImages = cleanSides(parseField(sideImages, {}))
 
-        if (imageUrls) {
-            updateData.image = JSON.parse(imageUrls)
-        }
+        const images = parseField(imageUrls, null)
+        if (images && images.length) updateData.image = images
 
         await productModel.findByIdAndUpdate(id, updateData)
 
@@ -275,4 +329,4 @@ const getProductOg = async (req, res) => {
     }
 }
 
-export { listProducts, addProduct, removeProduct, singleProduct, updateProduct, getProductsByCategory, getSitemap, getProductOg }
+export { listProducts, getRackProducts, addProduct, removeProduct, singleProduct, updateProduct, getProductsByCategory, getSitemap, getProductOg }

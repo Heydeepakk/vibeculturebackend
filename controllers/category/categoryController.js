@@ -10,7 +10,7 @@ const uploadToCloudinary = (buffer) => new Promise((resolve, reject) => {
 // Create category
 const createCategory = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, hangerStyle } = req.body;
 
     if (!name) {
       return res.json({ success: false, message: 'Category name is required' });
@@ -21,7 +21,7 @@ const createCategory = async (req, res) => {
       imageUrl = await uploadToCloudinary(req.file.buffer);
     }
 
-    const category = new categoryModel({ name, description, image: imageUrl });
+    const category = new categoryModel({ name, description, image: imageUrl, hangerStyle: hangerStyle || 'auto' });
     await category.save();
 
     res.json({ success: true, message: 'Category created successfully', category });
@@ -53,14 +53,15 @@ const deleteCategory = async (req, res) => {
 // Update category
 const updateCategory = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, hangerStyle } = req.body;
 
     let updateData = { name, description };
+    if (hangerStyle) updateData.hangerStyle = hangerStyle;
     if (req.file) {
       updateData.image = await uploadToCloudinary(req.file.buffer);
     }
 
-    await categoryModel.findByIdAndUpdate(req.params.id, updateData);
+    await categoryModel.findByIdAndUpdate(req.params.id, updateData, { runValidators: true });
     res.json({ success: true, message: 'Category updated successfully' });
   } catch (error) {
     res.json({ success: false, message: error.message });

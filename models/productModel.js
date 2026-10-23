@@ -6,8 +6,15 @@ const productSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     image: { type: Array, required: true },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'category', required: true },
-    subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'subcategory', required: true },
+    subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'subcategory' },
     bestseller: { type: Boolean },
+    // simple size list (e.g. S, M, L); older products may use `variants` instead
+    sizes: { type: [String], default: [] },
+    // optional side-profile photos; the storefront generates a side when these are empty
+    sideImages: {
+        left: { type: String, default: '' },
+        right: { type: String, default: '' }
+    },
     variants: [{
         attributes: [{
             attributeId: { type: mongoose.Schema.Types.ObjectId, ref: 'attribute' },
